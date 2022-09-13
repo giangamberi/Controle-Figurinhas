@@ -10,22 +10,20 @@ namespace Controle_Figurinhas
         {
             int i, j;
             int auxLocStart = 5;
-            Album album = new Album();
-            album.startUp();
-            album.addFigurinha("FWC", 7);
-            album.addFigurinha("FWC", 7);
-            album.addFigurinha("FWC", 19);
+            Colecao colecao = new Colecao();
+            //colecao.addFigurinha("FWC", 7);
+            colecao.save();
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             
             controleFigurinhas form = new controleFigurinhas();
-            form.Width = 1700;
+            form.Width = 2100;
             form.Height = 650;
 
             Label qtdAlbumsLabel = new Label();
-            qtdAlbumsLabel.Text = "Albums: " + album.QTDAlbums;
+            qtdAlbumsLabel.Text = "Albums: " + colecao.QTDAlbums;
             qtdAlbumsLabel.AutoSize = true;
             qtdAlbumsLabel.BackColor = Color.PaleVioletRed;
             qtdAlbumsLabel.Location = new Point(auxLocStart, 5);
@@ -34,7 +32,7 @@ namespace Controle_Figurinhas
 
 
             Label qtdFigurinhasTotalLabel = new Label();
-            qtdFigurinhasTotalLabel.Text = "Qtd de figurinhas: " + album.QTDFigurinhas;
+            qtdFigurinhasTotalLabel.Text = "Qtd de figurinhas: " + colecao.QTDFigurinhas;
             qtdFigurinhasTotalLabel.AutoSize = true;
             qtdFigurinhasTotalLabel.BackColor = Color.PaleVioletRed;
             qtdFigurinhasTotalLabel.Location = new Point(auxLocStart, 5);
@@ -42,24 +40,24 @@ namespace Controle_Figurinhas
             auxLocStart += qtdFigurinhasTotalLabel.Width + 5;
 
             Label qtdFigurinhasRepetidasLabel = new Label();
-            qtdFigurinhasRepetidasLabel.Text = "Figurinhas Repetidas: " + album.QTDFigurinhasRepetidas;
+            qtdFigurinhasRepetidasLabel.Text = "Figurinhas Repetidas: " + colecao.QTDFigurinhasRepetidas;
             qtdFigurinhasRepetidasLabel.AutoSize = true;
             qtdFigurinhasRepetidasLabel.BackColor = Color.PaleVioletRed;
             qtdFigurinhasRepetidasLabel.Location = new Point(auxLocStart, 5);
             form.Controls.Add(qtdFigurinhasRepetidasLabel);
             auxLocStart += qtdFigurinhasRepetidasLabel.Width + 5;
             
-            for (i = 0; i < album.QTDAlbums; i++)
+            for (i = 0; i < colecao.QTDAlbums; i++)
             {
                 Label qtdFigurinhasLabel = new Label();
-                qtdFigurinhasLabel.Text = $"Figurinhas no Album {i+1}: {album.QTDFigurinhasAlbum[i]}";
+                qtdFigurinhasLabel.Text = $"Figurinhas no Album {i+1}: {colecao.QTDFigurinhasAlbum[i]}";
                 qtdFigurinhasLabel.AutoSize = true;
                 qtdFigurinhasLabel.BackColor = Color.PaleVioletRed;
                 qtdFigurinhasLabel.Location = new Point(auxLocStart, 5);
                 form.Controls.Add(qtdFigurinhasLabel);
 
                 Label qtdFigurinhasFaltandoLabel = new Label();
-                qtdFigurinhasFaltandoLabel.Text = $"Figurinhas Faltantes no Album {i+1}: {album.QTDFigurinhasFaltantesAlbum[i]}";
+                qtdFigurinhasFaltandoLabel.Text = $"Figurinhas Faltantes no Album {i+1}: {colecao.QTDFigurinhasFaltantesAlbum[i]}";
                 qtdFigurinhasFaltandoLabel.AutoSize = true;
                 qtdFigurinhasFaltandoLabel.BackColor = Color.PaleVioletRed;
                 qtdFigurinhasFaltandoLabel.Location = new Point(auxLocStart, qtdFigurinhasLabel.Location.Y + qtdFigurinhasLabel.Height + 3);
@@ -73,19 +71,19 @@ namespace Controle_Figurinhas
             figurinhas.RowStyles.Clear();
             figurinhas.Name = "figurinhas";
             figurinhas.Location = new Point(45,40);
-            figurinhas.RowCount = album.maxRow();
-            figurinhas.ColumnCount = album.maxColumn();
+            figurinhas.RowCount = colecao.maxRow();
+            figurinhas.ColumnCount = colecao.maxColumn();
             figurinhas.AutoSize = true;
             figurinhas.CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset;
 
             i = 0;
-            foreach (string time in album.album.Keys)
+            foreach (string time in colecao.repetidas.Keys)
             {
-                for (j = 0; j < album.album[time].Length;)
+                for (j = 0; j < colecao.repetidas[time].Length;)
                 {
                     Label figurinha = new Label();
-                    figurinha.Text = time + ' ' + album.album[time][j];
-                    figurinha.BackColor = album.corTime(time);
+                    figurinha.Text = time + (time == "FWC" ? j : j+1) + ' ' + colecao.repetidas[time][j];
+                    figurinha.BackColor = colecao.corTime(time);
                     figurinha.AutoSize = true;
                     //figurinha.BorderStyle = BorderStyle.FixedSingle;
                     figurinhas.Controls.Add(figurinha,i,j++);
@@ -99,87 +97,128 @@ namespace Controle_Figurinhas
         }
     }
 
-    public class Album
+    public class Colecao
     {
-        public Dictionary<string, short[]> album = new Dictionary<string, short[]>();
+        public Dictionary<string, short[]> repetidas = new Dictionary<string, short[]>();
+        public Dictionary<string, bool[]>[] Albums; 
         public short QTDAlbums;
         public short QTDFigurinhas = 0;
         public short QTDFigurinhasRepetidas = 0;
         public short[] QTDFigurinhasAlbum;
         public short[] QTDFigurinhasFaltantesAlbum;
 
-        public void startUp()
+        public Colecao ()
         {
-            string[] arquivo = System.IO.File.ReadAllLines(@"C:\Users\giang\OneDrive\RandomProjects\Controle Figurinhas\Controle Figurinhas\dataDic.txt");
-            string[] aux;
-            short[] aux1;
+            string[] arquivo = System.IO.File.ReadAllLines($@"{Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName}\dataDic.txt");
+            string[] linha;
+            short[] figurinhasR;
+            bool[][] figurinhasA;
             short auxFig;
             int i,j,k;
-            aux = arquivo[0].Split(' ');
-            if (aux[0] == "albums")
+
+            linha = arquivo[0].Split(' ');
+            if (linha[0] == "albums")
             {
-                QTDAlbums = short.Parse(aux[1]);
+                QTDAlbums = short.Parse(linha[1]);
             }
 
+            Albums  = new Dictionary<string, bool[]>[QTDAlbums];
+            for (i = 0; i < QTDAlbums; i++)
+                Albums[i] = new Dictionary<string, bool[]>();
             QTDFigurinhasAlbum = new short[QTDAlbums];
             QTDFigurinhasFaltantesAlbum = new short[QTDAlbums];
+            figurinhasA = new bool[QTDAlbums][];
 
             for (i = 1; i < arquivo.Length; i++)
             {
-                aux = arquivo[i].Split(' ');
-                aux1 = new short[aux.Length-1];
-                for (j = 1; j < aux.Length;j++)
+                linha = arquivo[i].Split(' ');
+                figurinhasR = new short[linha.Length-1];
+                for (k = 0; k < QTDAlbums; k++)
+                    figurinhasA[k] = new bool[linha.Length - 1];
+
+                for (j = 0; j < figurinhasR.Length;j++)
                 {
-                    auxFig = short.Parse(aux[j]);
-                    aux1[j-1] = auxFig;
+                    auxFig = short.Parse(linha[j+1]);
                     QTDFigurinhas += auxFig;
-                    for (k = 0; k<QTDAlbums; k++)
+                    for (k = 0; k < QTDAlbums; k++)
                     {
                         if (auxFig > 0)
                         {
-                            QTDFigurinhasAlbum[k] += 1;
-                            auxFig--;
+                            figurinhasA[k][j] = true;
+                            QTDFigurinhasAlbum[k]++;
                         }
                         else
                         {
-                            QTDFigurinhasFaltantesAlbum[k] += 1;
+                            figurinhasA[k][j] = false;
+                            QTDFigurinhasFaltantesAlbum[k]++;
                         }
                     }
+                    figurinhasR[j] = auxFig;
+
                     QTDFigurinhasRepetidas += auxFig;
                 }
-                album.Add(aux[0],aux1);    
+                for (k = 0; k < QTDAlbums; k++)
+                    Albums[k].Add(linha[0], figurinhasA[k]);
+                repetidas.Add(linha[0],figurinhasR);
             }
-            try
+        }
+
+        public void save()
+        {
+            string[] file = new string[35];
+            int i,j,k,aux;
+            file[0] = $"albums {QTDAlbums}";
+            i = 0;
+            foreach (string time in repetidas.Keys)
             {
+                file[++i] = time;
+                for (j = 0; j < repetidas[time].Length;j++)
+                {
+                    aux = 0;
+                    for (k = 0; k < QTDAlbums; k++)
+                        aux += Albums[k][time][j] ? 1 : 0 ;
+                    file[i] += $" {repetidas[time][j] + aux}";
+                }
             }
-            catch
-            {
-                Console.WriteLine("Erro ao abrir/ler o arquivo");
-            }
+            File.WriteAllLines(@"C:\Users\giang\OneDrive\RandomProjects\Controle Figurinhas\Controle Figurinhas\dataDic.txt",file);
         }
 
         public void addFigurinha(string time, int numero)
         {
-            if (album.Keys.Contains(time))
+            int i;
+            if (repetidas.Keys.Contains(time))
             {
-                if (numero-1 < album[time].Length)
+                numero -= (time == "FWC" ? 0 : 1);
+                if (numero < repetidas[time].Length)
                 {
-                    QTDFigurinhas += 1;
-                    //if (album[time][numero - 1] > )
-                    album[time][numero-1] += 1;
-                    
+                    QTDFigurinhas++;
+                    for (i = 0; i <= QTDAlbums; i++)
+                    {
+                        if (i == QTDAlbums)
+                        {
+                            repetidas[time][numero]++;
+                            QTDFigurinhasRepetidas++;
+                        }
+                        else if (!Albums[i][time][numero])
+                        {
+                            Albums[i][time][numero] = true;
+                            QTDFigurinhasAlbum[i]++;
+                            QTDFigurinhasFaltantesAlbum[i]--;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
         public int maxRow()
         {
-            return album["FWC"].Length;
+            return Albums[0]["FWC"].Length;
         }
 
         public int maxColumn()
         {
-            return album.Keys.Count;
+            return Albums[0].Keys.Count;
         }
 
         public Color corTime(string Time)
@@ -262,9 +301,9 @@ namespace Controle_Figurinhas
         public override string ToString()
         {
             string aux = "Albums: " + QTDAlbums + '\n';
-            foreach (string chave in album.Keys)
+            foreach (string chave in repetidas.Keys)
             {
-                aux += (chave + ':' + album[chave] + '\n');
+                aux += (chave + ':' + repetidas[chave] + '\n');
             }
 
             return aux;

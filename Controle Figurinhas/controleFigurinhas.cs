@@ -21,6 +21,12 @@ namespace Controle_Figurinhas
         {
             this.figurinhas.BeginUpdate();
 
+
+        }
+
+        private void controleFigurinhas_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

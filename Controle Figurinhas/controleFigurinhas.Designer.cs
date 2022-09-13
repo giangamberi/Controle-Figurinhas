@@ -81,6 +81,7 @@
             // 
             this.ClientSize = new System.Drawing.Size(876, 494);
             this.Name = "controleFigurinhas";
+            this.Load += new System.EventHandler(this.controleFigurinhas_Load);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
