@@ -8,94 +8,21 @@ namespace Controle_Figurinhas
         [STAThread]
         static void Main()
         {
-            int i, j;
-            int auxLocStart = 5;
             Colecao colecao = new Colecao();
             //colecao.addFigurinha("FWC", 7);
-            colecao.save();
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            
-            controleFigurinhas form = new controleFigurinhas();
-            form.Width = 2100;
+            controleFigurinhas form = new controleFigurinhas(colecao);
+            form.Width = 2500;
             form.Height = 650;
-
-            Label qtdAlbumsLabel = new Label();
-            qtdAlbumsLabel.Text = "Albums: " + colecao.QTDAlbums;
-            qtdAlbumsLabel.AutoSize = true;
-            qtdAlbumsLabel.BackColor = Color.PaleVioletRed;
-            qtdAlbumsLabel.Location = new Point(auxLocStart, 5);
-            form.Controls.Add(qtdAlbumsLabel);
-            auxLocStart += qtdAlbumsLabel.Width + 5;
-
-
-            Label qtdFigurinhasTotalLabel = new Label();
-            qtdFigurinhasTotalLabel.Text = "Qtd de figurinhas: " + colecao.QTDFigurinhas;
-            qtdFigurinhasTotalLabel.AutoSize = true;
-            qtdFigurinhasTotalLabel.BackColor = Color.PaleVioletRed;
-            qtdFigurinhasTotalLabel.Location = new Point(auxLocStart, 5);
-            form.Controls.Add(qtdFigurinhasTotalLabel);
-            auxLocStart += qtdFigurinhasTotalLabel.Width + 5;
-
-            Label qtdFigurinhasRepetidasLabel = new Label();
-            qtdFigurinhasRepetidasLabel.Text = "Figurinhas Repetidas: " + colecao.QTDFigurinhasRepetidas;
-            qtdFigurinhasRepetidasLabel.AutoSize = true;
-            qtdFigurinhasRepetidasLabel.BackColor = Color.PaleVioletRed;
-            qtdFigurinhasRepetidasLabel.Location = new Point(auxLocStart, 5);
-            form.Controls.Add(qtdFigurinhasRepetidasLabel);
-            auxLocStart += qtdFigurinhasRepetidasLabel.Width + 5;
-            
-            for (i = 0; i < colecao.QTDAlbums; i++)
-            {
-                Label qtdFigurinhasLabel = new Label();
-                qtdFigurinhasLabel.Text = $"Figurinhas no Album {i+1}: {colecao.QTDFigurinhasAlbum[i]}";
-                qtdFigurinhasLabel.AutoSize = true;
-                qtdFigurinhasLabel.BackColor = Color.PaleVioletRed;
-                qtdFigurinhasLabel.Location = new Point(auxLocStart, 5);
-                form.Controls.Add(qtdFigurinhasLabel);
-
-                Label qtdFigurinhasFaltandoLabel = new Label();
-                qtdFigurinhasFaltandoLabel.Text = $"Figurinhas Faltantes no Album {i+1}: {colecao.QTDFigurinhasFaltantesAlbum[i]}";
-                qtdFigurinhasFaltandoLabel.AutoSize = true;
-                qtdFigurinhasFaltandoLabel.BackColor = Color.PaleVioletRed;
-                qtdFigurinhasFaltandoLabel.Location = new Point(auxLocStart, qtdFigurinhasLabel.Location.Y + qtdFigurinhasLabel.Height + 3);
-                form.Controls.Add(qtdFigurinhasFaltandoLabel);
-                auxLocStart += qtdFigurinhasFaltandoLabel.Width + 5;
-            }
-
-            TableLayoutPanel figurinhas = new TableLayoutPanel();
-            figurinhas.Controls.Clear();
-            figurinhas.ColumnStyles.Clear();
-            figurinhas.RowStyles.Clear();
-            figurinhas.Name = "figurinhas";
-            figurinhas.Location = new Point(45,40);
-            figurinhas.RowCount = colecao.maxRow();
-            figurinhas.ColumnCount = colecao.maxColumn();
-            figurinhas.AutoSize = true;
-            figurinhas.CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset;
-
-            i = 0;
-            foreach (string time in colecao.repetidas.Keys)
-            {
-                for (j = 0; j < colecao.repetidas[time].Length;)
-                {
-                    Label figurinha = new Label();
-                    figurinha.Text = time + (time == "FWC" ? j : j+1) + ' ' + colecao.repetidas[time][j];
-                    figurinha.BackColor = colecao.corTime(time);
-                    figurinha.AutoSize = true;
-                    //figurinha.BorderStyle = BorderStyle.FixedSingle;
-                    figurinhas.Controls.Add(figurinha,i,j++);
-                }
-                i++;
-            }
-
-            form.Controls.Add(figurinhas);
-            
             Application.Run(form);
         }
+
     }
+
+
 
     public class Colecao
     {
@@ -146,6 +73,7 @@ namespace Controle_Figurinhas
                         {
                             figurinhasA[k][j] = true;
                             QTDFigurinhasAlbum[k]++;
+                            auxFig--;
                         }
                         else
                         {
