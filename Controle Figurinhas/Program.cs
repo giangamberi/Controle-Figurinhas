@@ -16,7 +16,7 @@ namespace Controle_Figurinhas
             ApplicationConfiguration.Initialize();
             controleFigurinhas form = new controleFigurinhas(colecao);
             form.Width = 2500;
-            form.Height = 650;
+            form.Height = 700;
             Application.Run(form);
         }
 
@@ -234,6 +234,44 @@ namespace Controle_Figurinhas
                 aux += (chave + ':' + repetidas[chave] + '\n');
             }
 
+            return aux;
+        }
+
+        public string ToString(int album)
+        {
+            string aux = "";
+            int numero;
+
+            if (album > QTDAlbums || album <0)
+                return aux;
+
+            if (album == QTDAlbums)
+            {
+                foreach (string time in repetidas.Keys)
+                {
+                    aux+= time + ": ";
+                    for (numero = 0; numero < repetidas[time].Length; numero++)
+                    {
+                        if (repetidas[time][numero] != 0)
+                            aux += $"{((time == "FWC") ? numero : numero + 1)} : {repetidas[time][numero]}, ";
+                    }
+
+                    aux += '\n';
+                }
+                return aux;
+            }
+
+            foreach (string time in Albums[album].Keys)
+            {
+                aux += time + ": ";
+                for (numero = 0; numero < Albums[album][time].Length; numero++)
+                {
+                    if (!Albums[album][time][numero])
+                        aux += $"{((time == "FWC") ? numero : numero+1)}, ";
+                }
+
+                aux += '\n';
+            }
             return aux;
         }
 
